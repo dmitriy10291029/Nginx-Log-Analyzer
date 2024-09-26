@@ -1,0 +1,2 @@
+add_subdirectory(log_analyzer)
+add_subdirectory(args_parser)

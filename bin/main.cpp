@@ -5,5 +5,5 @@
 int main(int argc, char** argv) {
     LogAnalyzer log_analyzer;
     
-    return log_analyzer.Run(argv);
+    return log_analyzer.Run(argc, argv);
 }

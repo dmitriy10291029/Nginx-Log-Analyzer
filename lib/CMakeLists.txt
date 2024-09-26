@@ -1,2 +1,4 @@
 add_subdirectory(log_analyzer)
 add_subdirectory(args_parser)
+add_subdirectory(file_parser)
+add_subdirectory(utils)

@@ -5,7 +5,7 @@
 LogAnalyzer::LogAnalyzer() {
 }
 
-int LogAnalyzer::Run(char** argv) {
+int LogAnalyzer::Run(int argc, char** argv) {
     std::cout << "LogAnalyzer is runnig" << std::endl;
     
     return 0;

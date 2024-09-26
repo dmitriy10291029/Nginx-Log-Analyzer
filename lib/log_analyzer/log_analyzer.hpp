@@ -2,6 +2,7 @@
 
 #include "lib/args_parser/args_parser.hpp"
 
+
 class LogAnalyzer {
 private:
     ArgsParser args_parser_;
@@ -9,5 +10,5 @@ private:
 public:
     explicit LogAnalyzer();
 
-    int Run(char** argv);
+    int Run(int argc, char** argv);
 };

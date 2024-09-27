@@ -5,57 +5,6 @@
 #include <cctype>
 
 
-namespace TimeUtil {
-
-    int64_t ConvertLogsToUnixTime(const char* datetime_cstr) {
-        if (!IsCharsInDatetimeValid(datetime_cstr)) {
-            return convertingErrorCode;
-        }
-        
-        DateTime datetime;
-
-        datetime.day = datetime_cstr[DAY_0_IDX] * 10 + 
-                datetime_cstr[DAY_1_IDX];
-
-        datetime.month = ConvertMonthNameToNumer(
-                GetMonthNameFromDatetime(datetime_cstr));
-        if (datetime.month == 0) {
-            return convertingErrorCode;
-        }
-
-        datetime.year = datetime_cstr[YEAR_0_IDX] * 1000 + 
-                datetime_cstr[YEAR_1_IDX] * 100 + 
-                datetime_cstr[YEAR_2_IDX] * 10 + 
-                datetime_cstr[YEAR_3_IDX];
-        
-        datetime.hours = datetime_cstr[HOURS_0_IDX] * 10 + 
-                datetime_cstr[HOURS_1_IDX];
-
-        datetime.minutes = datetime_cstr[MINUTES_0_IDX] * 10 + 
-                datetime_cstr[MINUTES_1_IDX];
-
-        datetime.seconds = datetime_cstr[SECONDS_0_IDX] * 10 + 
-                datetime_cstr[SECONDS_1_IDX];
-
-        if (datetime_cstr[TIMEZONE_SIGN_IDX] == '+') {
-            datetime.timezone_sign = 1;
-        } else if (datetime_cstr[TIMEZONE_SIGN_IDX] == '-') {
-            datetime.timezone_minutes = -1;
-        } else {
-            return -1;
-        }
-
-        datetime.timezone_hours = datetime_cstr[TIMEZONE_HOURS_0_IDX] * 10 + 
-                datetime_cstr[TIMEZONE_HOURS_1_IDX];
-
-        datetime.timezone_minutes = datetime_cstr[TIMEZONE_MINUTES_0_IDX] * 10 + 
-                datetime_cstr[TIMEZONE_MINUTES_1_IDX];
-
-        return ConvertDatetimeToUnixTime(datetime);
-    }
-} // namespace TimeUtil
-
-
 namespace {
     using namespace TimeUtil;
 
@@ -158,3 +107,53 @@ namespace {
                 static_cast<int64_t>(days) * 86400;
     }
 }
+
+namespace TimeUtil {
+
+    int64_t ConvertLogsTimeToUnix(const char* datetime_cstr) {
+        if (!IsCharsInDatetimeValid(datetime_cstr)) {
+            return convertingErrorCode;
+        }
+        
+        DateTime datetime;
+
+        datetime.day = datetime_cstr[DAY_0_IDX] * 10 + 
+                datetime_cstr[DAY_1_IDX];
+
+        datetime.month = ConvertMonthNameToNumer(
+                GetMonthNameFromDatetime(datetime_cstr));
+        if (datetime.month == 0) {
+            return convertingErrorCode;
+        }
+
+        datetime.year = datetime_cstr[YEAR_0_IDX] * 1000 + 
+                datetime_cstr[YEAR_1_IDX] * 100 + 
+                datetime_cstr[YEAR_2_IDX] * 10 + 
+                datetime_cstr[YEAR_3_IDX];
+        
+        datetime.hours = datetime_cstr[HOURS_0_IDX] * 10 + 
+                datetime_cstr[HOURS_1_IDX];
+
+        datetime.minutes = datetime_cstr[MINUTES_0_IDX] * 10 + 
+                datetime_cstr[MINUTES_1_IDX];
+
+        datetime.seconds = datetime_cstr[SECONDS_0_IDX] * 10 + 
+                datetime_cstr[SECONDS_1_IDX];
+
+        if (datetime_cstr[TIMEZONE_SIGN_IDX] == '+') {
+            datetime.timezone_sign = 1;
+        } else if (datetime_cstr[TIMEZONE_SIGN_IDX] == '-') {
+            datetime.timezone_minutes = -1;
+        } else {
+            return -1;
+        }
+
+        datetime.timezone_hours = datetime_cstr[TIMEZONE_HOURS_0_IDX] * 10 + 
+                datetime_cstr[TIMEZONE_HOURS_1_IDX];
+
+        datetime.timezone_minutes = datetime_cstr[TIMEZONE_MINUTES_0_IDX] * 10 + 
+                datetime_cstr[TIMEZONE_MINUTES_1_IDX];
+
+        return ConvertDatetimeToUnixTime(datetime);
+    }
+} // namespace TimeUtil

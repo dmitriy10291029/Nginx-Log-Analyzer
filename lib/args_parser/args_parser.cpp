@@ -3,6 +3,10 @@
 #include <cstring>
 
 
+ArgsParser::ArgsParser() {
+    
+}
+
 ParsingResult ArgsParser::Parse(int argc, char** argv) {
     ParsingResult parsing_result;
 

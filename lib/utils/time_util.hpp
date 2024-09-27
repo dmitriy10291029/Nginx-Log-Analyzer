@@ -14,6 +14,6 @@ namespace TimeUtil {
      * @return in case of error returns convertingErrorCode, otherwise returns value in unix 
      * utc-0 format
      */
-    int64_t ConvertLogsToUnixTime(const char* datetime_cstr);
+    int64_t ConvertLogsTimeToUnix(const char* datetime_cstr);
 
 } // namespace TimeUtil

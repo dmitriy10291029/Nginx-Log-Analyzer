@@ -2,13 +2,11 @@
 #include <string>
 #include <cstdlib>
 
+#include "lib/utils/colors_unicodes.hpp"
 
-#define COLOR_RESET        "\033[0m"
-#define SET_COLOR_RED      "\033[31m"
-#define SET_COLOR_GREEN    "\033[32m"
-#define SET_COLOR_BLUE     "\033[34m"
-
-
+/**
+ * @brief Generates main method.
+ */
 #define TEST_SCOPE(tests) int main(int, char**) {\
         int _test_iterator_ = 0; \
         tests; \
@@ -28,7 +26,9 @@
         } \
         _test_iterator_++;
 
-
+/**
+ * @brief Names the next block of code and prints information about it
+ */
 #define TEST(name) PRINT_FINISHED PRINT_STARTED(name)
 
 
@@ -36,10 +36,14 @@
     << _test_iterator_ << " failed at line " << __LINE__ << ": " << msg \
     << COLOR_RESET << std::endl;
 
-
+/**
+ * @brief For your test failure cases.
+ */
 #define RETURN_ERR_CODE return 1;
 
-
+/**
+ * @brief If expected isn't equals actual main returns 1.
+ */
 #define ASSERT_EQUAL(expected, actual) { \
         auto _expected_value_ = (expected); \
         auto _actual_value_ = (actual); \
@@ -49,14 +53,18 @@
         } \
     }
 
-
+/**
+ * @brief In case of false main returns 1.
+ */
 #define ASSERT_TRUE(condition) \
     if (!(condition)) { \
         PRINT_TEST_FAILED_MSG("condition is false, expected true") \
         RETURN_ERR_CODE \
     }
 
-
+/**
+ * @brief In case of true main returns 1.
+ */
 #define ASSERT_FALSE(condition) \
     if (condition) { \
         PRINT_TEST_FAILED_MSG("condition is true, expected false") \

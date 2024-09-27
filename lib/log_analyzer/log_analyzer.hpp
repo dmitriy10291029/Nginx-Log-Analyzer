@@ -10,5 +10,5 @@ private:
 public:
     explicit LogAnalyzer();
 
-    int Run(int argc, char** argv);
+    [[nodiscard]] int Run(int argc, char** argv);
 };

@@ -25,5 +25,5 @@ test_init:
 	@cd res && gunzip -f ${TEST_FILE_NAME}
 
 test_run:
-	@make run args="-t"
+	@cd build && ctest -V
 

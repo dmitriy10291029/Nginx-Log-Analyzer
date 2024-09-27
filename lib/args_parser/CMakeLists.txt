@@ -4,4 +4,7 @@ add_library(args_parser_library STATIC
     parsing_result.hpp
 )
 
-target_include_directories(args_parser_library PUBLIC log_analyzer_library)
+target_link_libraries(args_parser_library
+    PRIVATE utils_library
+)
+target_include_directories(args_parser_library PRIVATE ${PROJECT_SOURCE_DIR})

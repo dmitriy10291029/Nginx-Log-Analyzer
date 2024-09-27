@@ -1,5 +1,9 @@
 add_library(test_util_library STATIC test_util.hpp)
 set_target_properties(test_util_library PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(test_util_library
+    PRIVATE utils_library
+)
+target_include_directories(test_util_library PRIVATE ${PROJECT_SOURCE_DIR})
 enable_testing()
 
 # time_util_test

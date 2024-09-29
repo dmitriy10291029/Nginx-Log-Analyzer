@@ -8,7 +8,7 @@ LogAnalyzer::LogAnalyzer() {
     args_parser_.AddFlag("help", 'h')
         .AddFlag("print", 'p')
         .AddOption("output", 'o')
-        .AddOption("stats", 'n')
+        .AddOption("stats", 's')
         .AddOption("window", 'w')
         .AddOption("from", 'f')
         .AddOption("to", 'e');

@@ -20,7 +20,7 @@ public:
     [[nodiscard]] std::optional<Option> GetOption(const char* long_name) const;
 
     [[nodiscard]] char** GetFreeArgs() const;
-    [[nodiscard]] size_t GerFreeArgsSize() const;
+    [[nodiscard]] size_t GetFreeArgsSize() const;
 
 private:
     Option* options_ = new Option[maxAmountOfOptions];
@@ -45,7 +45,7 @@ private:
     char*   GetCurrentArg() const;
     char*   NextArg();
     
-    void    AddFreeArg(const char* arg);
+    void    AddFreeArg(char* arg);
 
     void    ParseShortName();
     bool    ParseShortNameFlag(char name);

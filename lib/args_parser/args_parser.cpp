@@ -40,13 +40,21 @@ ArgsParser& ArgsParser::AddOption(const char* long_name, char short_name) {
     return *this;
 }
  
-int ArgsParser::Parse(int argc, char** argv) {    
+int ArgsParser::Parse(int argc, char** argv) {
+    for (size_t it = 0; it < flags_size_; it++) {
+        flags_[it].declared = false;
+    }
+    for (size_t it = 0; it < options_size_; it++) {
+        options_[it].declared = false;
+        options_[it].value_declared = false;
+    }
+    free_args_size_ = 0;
     err_code_ = 0;
     argv_ = argv;
     argc_ = argc;
     current_arg_idx_ = 1;
     next_arg_idx_ = 2;
-    const char* arg = GetCurrentArg();
+    char* arg = GetCurrentArg();
 
     while (!ReachedEnd()) {
         if (arg[0] != '-' || strlen(arg) == 1) {
@@ -86,7 +94,7 @@ char** ArgsParser::GetFreeArgs() const {
     return free_args_;
 }
 
-size_t ArgsParser::GerFreeArgsSize() const {
+size_t ArgsParser::GetFreeArgsSize() const {
     return free_args_size_;
 }
 
@@ -120,18 +128,18 @@ char* ArgsParser::NextArg() {
     current_arg_idx_ = next_arg_idx_;
     next_arg_idx_++;
 
-    return argv_[next_arg_idx_];
+    return ReachedEnd() ? nullptr : argv_[current_arg_idx_];
 }
 
-void ArgsParser::AddFreeArg(const char* arg) {
+void ArgsParser::AddFreeArg(char* arg) {
     if (free_args_size_ <= maxAmountOfFreeArgs) {
-        free_args_[free_args_size_++] = strdup(arg);
+        free_args_[free_args_size_++] = arg;
     }
 }
 
 
 void ArgsParser::ParseShortName() {
-    char* pos = strdup(GetCurrentArg() + 1); // skip '-'
+    char* pos = GetCurrentArg() + 1; // skip '-'
 
     while (*pos != '\0' && *pos != '=') {
         if (ParseShortNameFlag(*pos) || ParseShortNameOption(*pos)) {
@@ -221,7 +229,8 @@ bool ArgsParser::ParseLongNameOption(const char* name) {
 
             if (value) {
                 if (options_[it].value_declared) {
-                    PrintlnWarn(MULTIPLE_VALUES); // to-do
+                    PrintlnWarn(name);
+                    PrintlnWarn(MULTIPLE_VALUES);
                 }
                 options_[it].value = value.value();
                 options_[it].value_declared = true;
@@ -236,6 +245,7 @@ bool ArgsParser::ParseLongNameOption(const char* name) {
 
 std::optional<const char*> ArgsParser::GetValue(size_t arg_idx) {
     const char* equal_pos = strchr(argv_[arg_idx], '=');
+
     if (equal_pos != nullptr) {
         return equal_pos + 1; // skip '='
     }
@@ -259,7 +269,7 @@ const char* ArgsParser::GetLongOptionName(const char* arg) const {
     const char* equal_pos = strchr(clear_arg, '=');
 
     if (equal_pos == nullptr) {
-        return strdup(clear_arg);
+        return clear_arg;
 
     } else {
         size_t len = equal_pos - clear_arg; // distance between ptrs

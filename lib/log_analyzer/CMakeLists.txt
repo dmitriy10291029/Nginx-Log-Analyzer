@@ -5,4 +5,7 @@ add_library(log_analyzer_library STATIC
 
 target_include_directories(log_analyzer_library PUBLIC ${PROJECT_SOURCE_DIR})
 
-target_link_libraries(log_analyzer_library PUBLIC args_parser_library)
+target_link_libraries(log_analyzer_library 
+    PRIVATE args_parser_library
+    PRIVATE utils_library
+)

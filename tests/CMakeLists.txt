@@ -14,3 +14,13 @@ target_link_libraries(time_util_test
 )
 target_include_directories(time_util_test PRIVATE ${PROJECT_SOURCE_DIR})
 add_test(NAME TIME_UTIL_TEST COMMAND time_util_test)
+
+
+# args_parser_test
+add_executable(args_parser_test args_parser_test.cpp)
+target_link_libraries(args_parser_test
+    PRIVATE test_util_library
+    PRIVATE args_parser_library
+)
+target_include_directories(args_parser_test PRIVATE ${PROJECT_SOURCE_DIR})
+add_test(NAME ARGS_PARSER_TEST COMMAND args_parser_test)

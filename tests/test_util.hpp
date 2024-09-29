@@ -7,13 +7,9 @@
 /**
  * @brief Generates main method.
  */
-#define TEST_SCOPE(tests) int main(int, char**) {\
-        int _test_iterator_ = 0; \
-        tests; \
-        PRINT_FINISHED; \
-        return 0;\
-    }
+#define TESTS_BEGIN int main(int, char**) { int _test_iterator_ = 0;
 
+#define TESTS_END PRINT_FINISHED; return 0; }
 
 #define PRINT_STARTED(name) std::cout << SET_COLOR_BLUE "[INFO] Test #" \
         << _test_iterator_ << ": " << (name) << " started." << COLOR_RESET \

@@ -251,12 +251,4 @@ TEST("Add AnalyzeLog options") {
     }
 }
 
-
-
-
-
-
-
-
-
 TESTS_END

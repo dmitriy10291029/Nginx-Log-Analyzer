@@ -25,11 +25,11 @@ namespace PrintUtil {
     }
 
     void PrintlnCrit(const char* msg) {
-        std::cout << SET_COLOR_RED << "[CRIT] " << msg << COLOR_RESET << std::endl;
+        std::cerr << SET_COLOR_RED << "[CRIT] " << msg << COLOR_RESET << std::endl;
     }
 
     void PrintlnCrit(char ch) {
-        std::cout << SET_COLOR_RED << "[CRIT] " << ch << COLOR_RESET << std::endl;
+        std::cerr << SET_COLOR_RED << "[CRIT] " << ch << COLOR_RESET << std::endl;
     }
 
 } // namespace PrintUtil

@@ -24,3 +24,13 @@ target_link_libraries(args_parser_test
 )
 target_include_directories(args_parser_test PRIVATE ${PROJECT_SOURCE_DIR})
 add_test(NAME ARGS_PARSER_TEST COMMAND args_parser_test)
+
+# log_analyzer_test
+add_executable(log_analyzer_test log_analyzer_test.cpp)
+target_link_libraries(log_analyzer_test
+    PRIVATE test_util_library
+    PRIVATE log_analyzer_library
+)
+target_include_directories(log_analyzer_test PRIVATE ${PROJECT_SOURCE_DIR})
+add_test(NAME LOG_ANALYZER_TEST COMMAND log_analyzer_test)
+

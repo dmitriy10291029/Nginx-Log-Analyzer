@@ -1,6 +1,9 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <chrono>
 
 #include "lib/utils/colors_unicodes.hpp"
 
@@ -27,6 +30,12 @@
  */
 #define TEST(name) PRINT_FINISHED PRINT_STARTED(name)
 
+#define TIMER_START { auto start = std::chrono::high_resolution_clock::now(); 
+
+#define TIMER_STOP auto end = std::chrono::high_resolution_clock::now();\
+    std::chrono::duration<double> elapsed = end - start;\
+    std::cout << SET_COLOR_GREEN << "[TIME] " << elapsed.count() << " ms" \
+        << COLOR_RESET << std::endl; }
 
 #define PRINT_TEST_FAILED_MSG(msg) std::cout << SET_COLOR_RED "[FAIL] Test #" \
     << _test_iterator_ << " failed at line " << __LINE__ << ": " << msg \

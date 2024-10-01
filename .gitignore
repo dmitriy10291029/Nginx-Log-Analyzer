@@ -2,6 +2,9 @@
 build/*
 res/*
 
+# vsc
+.vscode/*
+
 # Prerequisites
 *.d
 

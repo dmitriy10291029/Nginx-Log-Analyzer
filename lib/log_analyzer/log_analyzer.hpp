@@ -1,9 +1,10 @@
 #pragma once
 
 #include <cstdint>
-
-#include "lib/args_parser/args_parser.hpp"
 #include <fstream>
+
+#include "../args_parser/args_parser.hpp"
+#include "request.hpp"
 
 #define USAGE_TEXT \
 "Usage: log_file [options]\n\
@@ -15,13 +16,14 @@ Options:\n\
   -f time, --from=time        Start analyzing data from the specified time in timestamp format. Default is the earliest time in the log. \n\
   -e time, --to=time          Analyze data up to the specified time in timestamp format (inclusive). Default is the latest time in the log."
 
-constexpr size_t maxBufferSize = 512;
+constexpr size_t readBufferSize   = 1024 * 64;
+constexpr size_t writeBufferSize  = 1024 * 64;
+constexpr size_t lineLenInit      = 256;
 
 class LogAnalyzer {
 public:
     void SetUp(int argc, char** argv);
-
-    [[nodiscard]] int Run(int argc, char** argv);
+    [[nodiscard]] int Run();
 
 private:
     ArgsParser      args_parser_;
@@ -46,19 +48,46 @@ private:
     bool            has_upper_time_bound_ = false;
     int64_t         upper_time_bound_unix_ = 0;
  
-    char            buffer_[maxBufferSize];
-    size_t          bufferSize_ = 0;
+    char            read_buffer_[readBufferSize];
+    size_t          bytes_read_ = 0;
+    size_t          read_buffer_pos_ = 0;
+
+    char*           line_ = nullptr;
+    size_t          line_size_ = lineLenInit;
+    size_t          line_len_ = 0;
+    char*           line_pos_ = 0;
+    Request         curr_request_;
 
     int             err_code_ = 0;
+    int             err_amount_ = 0;
+    int32_t         requests_total = 0;
 
-    void SetUpHelp();
-    void SetUpInput();
-    void SetUpOutput();
-    void SetUpPrint();
-    void SetUpStats();
-    void SetUpWindow();
-    void SetUpFrom();
-    void SetUpTo();
+    char            write_buffer_[writeBufferSize];
+    size_t          write_buffer_pos_ = 0;
 
-    bool ReadRequest();
+    void    SetUpHelp();
+    void    SetUpInput();
+    void    SetUpOutput();
+    void    SetUpPrint();
+    void    SetUpStats();
+    void    SetUpWindow();
+    void    SetUpFrom();
+    void    SetUpTo();
+
+    void    ReadRequest();
+
+    char*   ReadNextPart();
+    size_t  ReadNextLine();
+    char    Get();
+    bool    ReachedEnd();
+
+    void    FindInLine(char target);
+    void    FindInLineFromEnd(char target);
+    void    SplitLine();
+    void    IncrementLinePos();
+
+    bool    IsWhitespace(char ch);
+
+    void    Write(char* text);
+    void    WriteBuffer();
 };

@@ -2,7 +2,6 @@ add_library(args_parser_library STATIC
     args_parser_messages.hpp
     args_parser.cpp
     args_parser.hpp
-    parsing_result.hpp
     flag.hpp
     option.hpp
 )

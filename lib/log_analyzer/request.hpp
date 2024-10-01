@@ -3,8 +3,8 @@
 #include <cstdint>
 
 struct Request {
-    const char* remote_addr;
-    int64_t datetime_unix;
-    const char* url;
-    uint16_t status_code;
+    char*       remote_addr     = nullptr;
+    int64_t     datetime_unix   = 0;
+    char*       url             = nullptr;
+    uint32_t    status_code     = 0;
 };

@@ -80,6 +80,8 @@ private:
     std::unordered_multimap<
         uint64_t, std::pair<int, std::streampos>> req_freq_map;
 
+    std::vector<uint64_t> timestamps_;
+
     void            SetUpHelp();
     void            SetUpInput();
     void            SetUpOutput();
@@ -115,4 +117,5 @@ private:
     const char*     TempFileFind(std::streampos pos);
     bool            TempFileFindAndCompare(std::streampos pos, const char* str);
     void            PrintMostFreqErrReq();
+    void            PrintMaxReqWindow();
 };

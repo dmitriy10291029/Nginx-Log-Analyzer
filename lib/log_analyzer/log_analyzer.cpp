@@ -152,6 +152,7 @@ int LogAnalyzer::Run() {
     }
 
     PrintMostFreqErrReq();
+    PrintMaxReqWindow();
 
     PrintUtil::PrintlnInfo("Total processed requests:");
     PrintUtil::PrintlnInfo(requests_total_);
@@ -344,6 +345,7 @@ void LogAnalyzer::FindLowerTimeBound() {
         auto datetime = TimeUtil::ConvertLogsTimeToUnix(curr_request_.datetime_unix);
         if (datetime != TimeUtil::convertingErrorCode) {
             if (datetime >= lower_time_bound_unix_) {
+                timestamps_.push_back(datetime);
                 return;
             } 
         }
@@ -358,6 +360,8 @@ void LogAnalyzer::AssertUpperTimeBound() {
 
         } else if (datetime > upper_time_bound_unix_) {
             found_upper_time_bound_ = true;
+        } else {
+            timestamps_.push_back(datetime);
         }
     }
 }
@@ -530,5 +534,12 @@ void LogAnalyzer::PrintMostFreqErrReq() {
         delete url;
 
         count++;
+    }
+}
+
+void LogAnalyzer::PrintMaxReqWindow() {
+    if (print_max_requests_window_) {
+        PrintUtil::PrintlnInfo("Window size: ");
+        PrintUtil::PrintlnInfo(timestamps_.size());
     }
 }

@@ -25,9 +25,10 @@ namespace TimeUtil {
 
         datetime.day = static_cast<uint8_t>(logs_dt[DAY_0_IDX] - '0') * 10 + 
                 static_cast<uint8_t>(logs_dt[DAY_1_IDX] - '0');
-                
-        datetime.month = ConvertMonthNameToNumer(
-                GetMonthNameFromDatetime(logs_dt));
+
+        const char* month_str = GetMonthNameFromDatetime(logs_dt);        
+        datetime.month = ConvertMonthNameToNumer(month_str);
+        delete month_str;
         if (datetime.month == 0) {
             return convertingErrorCode;
         }

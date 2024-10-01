@@ -9,5 +9,6 @@ namespace PrintUtil {
     void PrintlnInfo(int i);
     void PrintlnWarn(int i);
     void PrintlnCrit(int i);
+    void Println();
 
 } // namespace PrintUtil

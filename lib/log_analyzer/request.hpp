@@ -4,7 +4,8 @@
 
 struct Request {
     char*       remote_addr     = nullptr;
-    int64_t     datetime_unix   = 0;
+    char*       datetime_unix    = nullptr;
     char*       url             = nullptr;
-    uint32_t    status_code     = 0;
+    char*       status_str      = nullptr;
+    char*       bytes_str       = nullptr;
 };

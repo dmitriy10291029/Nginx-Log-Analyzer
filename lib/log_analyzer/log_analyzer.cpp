@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstring>
+#include <algorithm>
 
 #include "log_analyzer.hpp"
 #include "../utils/print_util.hpp" 
@@ -7,8 +8,6 @@
 
 
 void LogAnalyzer::SetUp(int argc, char** argv) {
-    line_ = new char[lineLenInit];
-
     err_code_ = args_parser_
         .AddFlag("help", 'h')
         .AddFlag("print", 'p')
@@ -87,6 +86,12 @@ void LogAnalyzer::SetUpStats() {
     if (opt.value_declared) {
         most_freq_err_requests_len_ = std::atoi(opt.value);
     }
+    temp_file_ = new std::fstream("__temp__.txt", std::ios::in | std::ios::out | std::ios::trunc);
+    if (!temp_file_->is_open()) {
+        has_output_path_ = false;
+        PrintUtil::PrintlnWarn("Can't create and open temp file for stats option.");
+        PrintUtil::PrintlnWarn("Stats option was disabled.");
+    }
 }
 
 void LogAnalyzer::SetUpWindow() {
@@ -99,7 +104,7 @@ void LogAnalyzer::SetUpWindow() {
 
 void LogAnalyzer::SetUpFrom() {
     auto opt = args_parser_.GetOption("from").value();
-    has_lower_time_bound_ = opt.declared;
+    has_lower_time_bound_ = opt.declared && opt.value_declared;
     if (opt.value_declared) {
         lower_time_bound_unix_ = std::atol(opt.value);
     }
@@ -107,9 +112,14 @@ void LogAnalyzer::SetUpFrom() {
 
 void LogAnalyzer::SetUpTo() {
     auto opt = args_parser_.GetOption("to").value();
-    has_upper_time_bound_ = opt.declared;
+    has_upper_time_bound_ = opt.declared && opt.value_declared;
     if (opt.value_declared) {
         upper_time_bound_unix_ = std::atol(opt.value);
+        if (upper_time_bound_unix_ < lower_time_bound_unix_) {
+            PrintUtil::PrintlnWarn("Invalid time borders. This options was disabled.");
+            has_lower_time_bound_ = false;
+            has_upper_time_bound_ = false;
+        }
     }
 }
 
@@ -119,31 +129,51 @@ int LogAnalyzer::Run() {
         return err_code_;
     }
 
+    if (lower_time_bound_unix_) {
+        requests_total_++;
+        FindLowerTimeBound();
+        WriteRequestIfError();
+    }
+
     while (!ReachedEnd()) {
-        requests_total++;
+        requests_total_++;
         ReadRequest();
-        if (err_code_ != 0) {
-            err_code_ = 0;
-            ++err_amount_;
-            continue;
+        if (found_upper_time_bound_) {
+            break;
         }
-        if (curr_request_.status_code >= 500) {
-            if (print_error_requests_ || has_output_path_) {
-                Write(curr_request_.url);
-            }
-        }
+        WriteRequestIfError();
     }
     WriteBuffer();
 
-    if (err_amount_ > 0) {
+    if (invalid_amount_ > 0) {
         PrintUtil::PrintlnWarn("Requests containing errors were detected:");
-        PrintUtil::PrintlnWarn(err_amount_);
+        PrintUtil::PrintlnWarn(invalid_amount_);
+        PrintUtil::Println();
     }
 
-    PrintUtil::PrintlnInfo("Processed requests:");
-    PrintUtil::PrintlnInfo(requests_total);
+    PrintMostFreqErrReq();
+
+    PrintUtil::PrintlnInfo("Total processed requests:");
+    PrintUtil::PrintlnInfo(requests_total_);
+    PrintUtil::Println();
+
+    PrintUtil::PrintlnInfo("Server error requests:");
+    PrintUtil::PrintlnInfo(err_amount_);
+    PrintUtil::Println();
 
     return 0;
+}
+
+int LogAnalyzer::GetTotalRequests() const {
+    return requests_total_;
+}
+
+int LogAnalyzer::GetInvalidRequests() const {
+    return invalid_amount_;
+}
+
+int LogAnalyzer::GetErrorRequests() const {
+    return err_amount_;
 }
 
 void LogAnalyzer::ReadRequest() {
@@ -158,13 +188,11 @@ void LogAnalyzer::ReadRequest() {
 
     // parse datetime
     FindInLine('[');
-    char* datetime_str = line_pos_;
+    curr_request_.datetime_unix = line_pos_;
     FindInLine(']');
     IncrementLinePos();
     SplitLine();
-    if (err_code_ == 0) {
-        curr_request_.datetime_unix = TimeUtil::ConvertLogsTimeToUnix(datetime_str);
-    }
+    AssertUpperTimeBound();
 
     // parse curr_request url
     FindInLine('\"');
@@ -175,40 +203,16 @@ void LogAnalyzer::ReadRequest() {
     SplitLine();
 
     // parse status code
-    char* status_str = line_pos_;
+    curr_request_.status_str = line_pos_;
     FindInLine(' ');
     SplitLine();
-    if (status_str == nullptr) {
+    if (!IsCorrectStatus(curr_request_.status_str)) {
         err_code_ = 1;
-        
-    } else if (err_code_ == 0) {
-        curr_request_.status_code = static_cast<uint32_t>(std::atoi(status_str));
-        if (!(200 <= curr_request_.status_code && curr_request_.status_code <= 599)) {
-            err_code_ = 1;
-        }
-    }
-}
-
-char* LogAnalyzer::ReadNextPart() {
-    char* part = new char[255];
-
-    char ch;
-    do {
-        ch = Get();
-    } while (IsWhitespace(ch));
-
-    char* pos = part;
-    
-    while (!IsWhitespace(ch) && ch != EOF) {
-        *pos = ch;
-        ++pos;
-        ch = Get();
     }
 
-    *pos = '\0';
-
-    return part;
-}
+    // parse read bytes
+    curr_request_.bytes_str = line_pos_;
+}   
 
 size_t LogAnalyzer::ReadNextLine() {
     char ch;
@@ -227,6 +231,13 @@ size_t LogAnalyzer::ReadNextLine() {
     while (ch != '\n' && ch != EOF) {
         *pos = ch;
         if (pos == end_of_line) { // resize
+            if (line_size_ * 2 > lineLenMax) {
+                err_code_ = 1;
+                delete line_;
+                line_ = nullptr;
+
+                return 0;
+            }
             char* new_line = new char[line_size_ * 2];
             strncpy(new_line, line_, line_size_);
             pos = new_line + line_size_ - 1;
@@ -318,11 +329,57 @@ void LogAnalyzer::IncrementLinePos() {
     }
 }
 
+void LogAnalyzer::FindLowerTimeBound() {
+    if (!has_lower_time_bound_) {
+        err_code_ = 1;
+        return;
+    }
+
+    while (!ReachedEnd()) {
+        ReadRequest();
+        if (err_code_ != 0) {
+            err_code_ = 0;
+            continue;
+        }
+        auto datetime = TimeUtil::ConvertLogsTimeToUnix(curr_request_.datetime_unix);
+        if (datetime != TimeUtil::convertingErrorCode) {
+            if (datetime >= lower_time_bound_unix_) {
+                return;
+            } 
+        }
+    }
+}
+
+void LogAnalyzer::AssertUpperTimeBound() {
+    if (err_code_ == 0 && has_upper_time_bound_) {
+        auto datetime = TimeUtil::ConvertLogsTimeToUnix(curr_request_.datetime_unix);
+        if (datetime == TimeUtil::convertingErrorCode) {
+            err_code_ = 1;
+
+        } else if (datetime > upper_time_bound_unix_) {
+            found_upper_time_bound_ = true;
+        }
+    }
+}
+
 bool LogAnalyzer::IsWhitespace(char ch) {
     return ch == ' ' || ch == '\n' || ch == '\t' || ch == '\r';
 }
 
-void LogAnalyzer::Write(char* text) {
+bool LogAnalyzer::IsCorrectStatus(const char* status) {
+    return err_code_ == 0 && status != nullptr && strlen(status) == 3 
+        && status[0] >= '2' && status[0] <= '5' 
+        && std::isdigit(status[1]) && std::isdigit(status[2]);
+}
+
+bool LogAnalyzer::IsServerErrorStatus(const char* status) {
+    return status[0] == '5';
+}
+
+void LogAnalyzer::Write(const char* text) {
+    if (text == nullptr) {
+        return;
+    }
     while (*text != '\0') {
         write_buffer_[write_buffer_pos_] = *text;
         ++text;
@@ -330,6 +387,55 @@ void LogAnalyzer::Write(char* text) {
         if (write_buffer_pos_ == writeBufferSize) {
             WriteBuffer();
         }
+    }
+}
+
+void LogAnalyzer::WriteRequest() {
+    Write(std::to_string(err_amount_).c_str());
+    Write(": ");
+    Write(curr_request_.remote_addr);
+    Write(" - - ");
+    Write(curr_request_.datetime_unix);
+    Write(" ");
+    Write(curr_request_.url);
+    Write(" ");
+    Write(curr_request_.status_str);
+    Write(" ");
+    Write(curr_request_.bytes_str);
+    Write("\n");
+}
+
+void LogAnalyzer::WriteRequestIfError() {
+    if (err_code_ != 0) {
+        err_code_ = 0;
+        ++invalid_amount_;
+        
+    } else if (IsServerErrorStatus(curr_request_.status_str)) {
+        ++err_amount_;
+
+        if (print_most_freq_err_requests_) {
+            auto hash = CalcStrHash(curr_request_.url);
+            
+            bool is_entry_first = true;
+
+            if (req_freq_map.contains(hash)) {
+                auto range = req_freq_map.equal_range(hash);
+                for (auto it = range.first; it != range.second; ++it) {
+                    if (TempFileFindAndCompare(it->second.second, curr_request_.url)) {
+                        it->second.first++;
+                        is_entry_first = false;
+                        break;
+                    }
+                }
+            }
+
+            if (is_entry_first) {
+                auto pos = TempFileAddRequest(curr_request_.url);
+                req_freq_map.insert({hash, {1, pos}});
+            }
+        }
+
+        WriteRequest();
     }
 }
 
@@ -341,4 +447,88 @@ void LogAnalyzer::WriteBuffer() {
         output_stream_->write(write_buffer_, write_buffer_pos_);
     }
     write_buffer_pos_ = 0;
+}
+
+uint64_t LogAnalyzer::CalcStrHash(const char* str) {
+    uint64_t hashValue = 0;
+    uint64_t pPow = 1;
+
+    size_t len = std::strlen(str);
+    for (size_t it = 0; it < len; ++it) {
+        hashValue = (hashValue + (str[it] - 'a' + 1) * pPow) % hashFuncModule; 
+        pPow = (pPow * hashFuncBase) % hashFuncModule;
+    }
+
+    return hashValue;
+}
+
+std::streampos LogAnalyzer::TempFileAddRequest(const char* str) {
+    temp_file_->seekp(0, std::ios::end); // erase it?
+    std::streampos position = temp_file_->tellp();
+    *temp_file_ << str << std::endl;
+
+    return position;
+}
+
+const char* LogAnalyzer::TempFileFind(std::streampos pos) {
+    temp_file_->seekg(pos, std::ios::beg);
+    char* result = new char[lineLenMax];
+    temp_file_->getline(result, lineLenMax);
+
+    return result;
+}
+
+bool LogAnalyzer::TempFileFindAndCompare(std::streampos pos, const char* str) {
+    temp_file_->seekg(pos, std::ios::beg);
+    
+    char ch_file; 
+    size_t i = 0; 
+
+    while (true) {
+        temp_file_->get(ch_file);  
+
+        if (ch_file == '\n' || ch_file == EOF || ch_file == '\0') {
+            return str[i] == '\0';  
+
+        } else if (str[i] == '\0') {
+            return false;
+
+        } else if (ch_file != str[i]) {
+            return false;
+        }
+
+        i++;  
+    }
+}
+
+void LogAnalyzer::PrintMostFreqErrReq() {
+    if (!print_error_requests_) {
+        return;
+    }
+
+    std::vector<std::pair<int, int>> pairs;
+
+    for (const auto& pair : req_freq_map) {
+        pairs.push_back(pair.second);
+    }
+
+    std::sort(pairs.begin(), pairs.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
+        return a.first > b.first;
+    });
+
+    std::size_t count = 0;
+    for (const auto& pair : pairs) {
+        if (count >= most_freq_err_requests_len_) {
+            break;
+        }
+        
+        const char* url = TempFileFind(pair.second);
+        int amount = pair.first;
+        PrintUtil::PrintlnInfo(url);
+        PrintUtil::PrintlnInfo(amount);
+        PrintUtil::Println();
+        delete url;
+
+        count++;
+    }
 }

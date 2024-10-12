@@ -11,4 +11,3 @@ SET(CMAKE_CXX_STANDARD 23)
 add_subdirectory(lib)
 add_subdirectory(bin)
 add_subdirectory(tests)
-

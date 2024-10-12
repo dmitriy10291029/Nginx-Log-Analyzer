@@ -33,4 +33,3 @@ target_link_libraries(log_analyzer_test
 )
 target_include_directories(log_analyzer_test PRIVATE ${PROJECT_SOURCE_DIR})
 add_test(NAME LOG_ANALYZER_TEST COMMAND log_analyzer_test)
-

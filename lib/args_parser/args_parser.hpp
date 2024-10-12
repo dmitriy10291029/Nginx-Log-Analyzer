@@ -6,8 +6,8 @@
 #include "option.hpp"
 
 
-constexpr size_t maxAmountOfOptions     = 50;
-constexpr size_t maxAmountOfFreeArgs    = 100;
+constexpr size_t kMaxAmountOfOptions     = 50;
+constexpr size_t kMaxAmountOfFreeArgs    = 100;
 
 class ArgsParser {
 public:
@@ -23,13 +23,13 @@ public:
     [[nodiscard]] size_t GetFreeArgsSize() const;
 
 private:
-    Option* options_ = new Option[maxAmountOfOptions];
+    Option* options_ = new Option[kMaxAmountOfOptions];
     size_t  options_size_ = 0;
 
-    Flag*   flags_ = new Flag[maxAmountOfOptions];
+    Flag*   flags_ = new Flag[kMaxAmountOfOptions];
     size_t  flags_size_ = 0;
 
-    char**  free_args_ = new char*[maxAmountOfFreeArgs];
+    char**  free_args_ = new char*[kMaxAmountOfFreeArgs];
     size_t  free_args_size_ = 0;
 
     char**  argv_ = nullptr;

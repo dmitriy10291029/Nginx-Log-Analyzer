@@ -1,6 +1,7 @@
 # cmake build
 build/*
 res/*
+__temp__.txt
 
 # vsc
 .vscode/*

@@ -1,4 +1,4 @@
-.PHONY: init build run
+.PHONY: init build run test_init test_run
 
 
 
@@ -25,5 +25,5 @@ test_init:
 	@cd res && gunzip -f ${TEST_FILE_NAME}
 
 test_run:
-	@cd build && ctest -V
+	@cd build/tests && ctest -V
 

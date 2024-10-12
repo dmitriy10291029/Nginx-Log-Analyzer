@@ -9,7 +9,7 @@
 using namespace PrintUtil;
 
 ArgsParser& ArgsParser::AddFlag(const char* long_name, char short_name) {
-    if (flags_size_ == maxAmountOfOptions) {
+    if (flags_size_ == kMaxAmountOfOptions) {
         PrintlnWarn(FLAGS_FULL);
         return *this;
     }
@@ -25,7 +25,7 @@ ArgsParser& ArgsParser::AddFlag(const char* long_name, char short_name) {
 }
 
 ArgsParser& ArgsParser::AddOption(const char* long_name, char short_name) {
-    if (options_size_ == maxAmountOfOptions) {
+    if (options_size_ == kMaxAmountOfOptions) {
         PrintlnWarn(OPTIONS_FULL);
         return *this;
     }
@@ -98,7 +98,6 @@ size_t ArgsParser::GetFreeArgsSize() const {
     return free_args_size_;
 }
 
-
 bool ArgsParser::IsAlreadyDeclared(const char* long_name, char short_name) const {
     for (size_t it = 0; it < flags_size_; it++) {
         if (strcmp(flags_[it].long_name, long_name) == 0 
@@ -132,7 +131,7 @@ char* ArgsParser::NextArg() {
 }
 
 void ArgsParser::AddFreeArg(char* arg) {
-    if (free_args_size_ <= maxAmountOfFreeArgs) {
+    if (free_args_size_ <= kMaxAmountOfFreeArgs) {
         free_args_[free_args_size_++] = arg;
     }
 }

@@ -1,6 +1,8 @@
 #include "test_util.hpp"
 #include "lib/log_analyzer/log_analyzer.hpp"
 
+//#define FILE_10KK_EXISTS
+
 TESTS_BEGIN
 
 TEST("Example 1") {
@@ -34,6 +36,8 @@ TEST("Perfomance test 1: 1 891 715 requests") {
     TIMER_STOP;
 }
 
+#ifdef FILE_10KK_EXISTS
+
 TEST("Perfomance test 2: 10 365 152 requests") {
     TIMER_START
 
@@ -46,5 +50,8 @@ TEST("Perfomance test 2: 10 365 152 requests") {
 
     TIMER_STOP
 }
+
+#endif
+
 
 TESTS_END

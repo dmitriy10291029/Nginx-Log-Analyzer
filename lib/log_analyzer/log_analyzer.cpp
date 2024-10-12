@@ -3,8 +3,8 @@
 #include <algorithm>
 
 #include "log_analyzer.hpp"
-#include "../utils/print_util.hpp" 
-#include "../utils/time_util.hpp"
+#include "lib/utils/print_util.hpp" 
+#include "lib/utils/time_util.hpp"
 
 
 void LogAnalyzer::SetUp(int argc, char** argv) {
@@ -222,9 +222,9 @@ size_t LogAnalyzer::ReadNextLine() {
     } while (IsWhitespace(ch));
 
     line_pos_ = nullptr;
-    if (line_size_ != lineLenInit) {
-        line_ = new char[lineLenInit];
-        line_size_ = lineLenInit;
+    if (line_size_ != kLineLenInit) {
+        line_ = new char[kLineLenInit];
+        line_size_ = kLineLenInit;
     }
     char* pos = line_;
     char* end_of_line = line_ + line_size_ - 1;
@@ -232,7 +232,7 @@ size_t LogAnalyzer::ReadNextLine() {
     while (ch != '\n' && ch != EOF) {
         *pos = ch;
         if (pos == end_of_line) { // resize
-            if (line_size_ * 2 > lineLenMax) {
+            if (line_size_ * 2 > kLineLenMax) {
                 err_code_ = 1;
                 delete line_;
                 line_ = nullptr;
@@ -267,7 +267,7 @@ char LogAnalyzer::Get() {
     if (input_stream_->eof()) {
         return EOF;
     }
-    input_stream_->read(read_buffer_, readBufferSize);
+    input_stream_->read(read_buffer_, kReadBufferSize);
     bytes_read_ = input_stream_->gcount();
     read_buffer_pos_ = 0;
 
@@ -388,7 +388,7 @@ void LogAnalyzer::Write(const char* text) {
         write_buffer_[write_buffer_pos_] = *text;
         ++text;
         ++write_buffer_pos_;
-        if (write_buffer_pos_ == writeBufferSize) {
+        if (write_buffer_pos_ == kWriteBufferSize) {
             WriteBuffer();
         }
     }
@@ -459,8 +459,8 @@ uint64_t LogAnalyzer::CalcStrHash(const char* str) {
 
     size_t len = std::strlen(str);
     for (size_t it = 0; it < len; ++it) {
-        hashValue = (hashValue + (str[it] - 'a' + 1) * pPow) % hashFuncModule; 
-        pPow = (pPow * hashFuncBase) % hashFuncModule;
+        hashValue = (hashValue + (str[it] - 'a' + 1) * pPow) % kHashFuncModule; 
+        pPow = (pPow * kHashFuncBase) % kHashFuncModule;
     }
 
     return hashValue;
@@ -476,8 +476,8 @@ std::streampos LogAnalyzer::TempFileAddRequest(const char* str) {
 
 const char* LogAnalyzer::TempFileFind(std::streampos pos) {
     temp_file_->seekg(pos, std::ios::beg);
-    char* result = new char[lineLenMax];
-    temp_file_->getline(result, lineLenMax);
+    char* result = new char[kLineLenMax];
+    temp_file_->getline(result, kLineLenMax);
 
     return result;
 }

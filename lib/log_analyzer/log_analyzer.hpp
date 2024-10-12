@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <queue>
 
-#include "../args_parser/args_parser.hpp"
+#include "lib/args_parser/args_parser.hpp"
 #include "request.hpp"
 
 #define USAGE_TEXT \
@@ -18,13 +18,13 @@ Options:\n\
   -f time, --from=time        Start analyzing data from the specified time in timestamp format. Default is the earliest time in the log. \n\
   -e time, --to=time          Analyze data up to the specified time in timestamp format (inclusive). Default is the latest time in the log."
 
-constexpr size_t    readBufferSize     = 1024 * 64;
-constexpr size_t    writeBufferSize    = 1024 * 64;
-constexpr size_t    lineLenInit        = 256;
-constexpr size_t    lineLenMax         = 1024 * 64;
+constexpr size_t    kReadBufferSize     = 1024 * 64;
+constexpr size_t    kWriteBufferSize    = 1024 * 64;
+constexpr size_t    kLineLenInit        = 256;
+constexpr size_t    kLineLenMax         = 1024 * 64;
 
-constexpr uint64_t  hashFuncModule     = 1e9 + 9;
-constexpr uint64_t  hashFuncBase       = 31;
+constexpr uint64_t  kHashFuncModule     = 1e9 + 9;
+constexpr uint64_t  kHashFuncBase       = 31;
 
 class LogAnalyzer {
 public:
@@ -58,12 +58,12 @@ private:
     bool            has_upper_time_bound_ = false;
     int64_t         upper_time_bound_unix_ = 0;
  
-    char            read_buffer_[readBufferSize];
+    char            read_buffer_[kReadBufferSize];
     std::streamsize bytes_read_ = 0;
     size_t          read_buffer_pos_ = 0;
 
-    char*           line_ = new char[lineLenInit];
-    size_t          line_size_ = lineLenInit;
+    char*           line_ = new char[kLineLenInit];
+    size_t          line_size_ = kLineLenInit;
     size_t          line_len_ = 0;
     char*           line_pos_ = 0;
     Request         curr_request_;
@@ -74,7 +74,7 @@ private:
     int             invalid_amount_ = 0;
     bool            found_upper_time_bound_ = false;
 
-    char            write_buffer_[writeBufferSize];
+    char            write_buffer_[kWriteBufferSize];
     size_t          write_buffer_pos_ = 0;
 
     std::unordered_multimap<
